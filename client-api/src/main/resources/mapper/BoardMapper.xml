@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mall.nanna.board.repository.mybatis.BoardRepository">
+
+    <resultMap id="BOARD_MAP" type="com.mall.nanna.board.entity.Board">
+        <id column="key" property="key"/>
+        <result column="title" property="title"/>
+        <result column="text" property="text"/>
+        <result column="password" property="password"/>
+        <result column="date_create" property="dateCreate"/>
+    </resultMap>
+
+    <select id="findAll" resultMap="BOARD_MAP" parameterType="com.mall.nanna.board.dto.BoardPaging">
+        SELECT `key`, title, `text`, password, date_create
+        FROM BOARD
+        WHERE '' = ''
+        AND state_delete = 0
+        <choose>
+            <when test='!searchColumn.equals("")'>
+                AND ${searchColumn} LIKE CONCAT('%',#{searchWord},'%')
+            </when>
+            <otherwise>
+                AND title LIKE CONCAT('%',#{searchWord},'%')
+            </otherwise>
+        </choose>
+        ORDER BY ${directionColumn} ${direction}
+        LIMIT ${(page - 1) * limit}, ${limit}
+    </select>
+
+    <select id="findTotalCount" resultType="Integer" parameterType="com.mall.nanna.board.dto.BoardPaging">
+        SELECT COUNT(`key`)
+        FROM BOARD
+        WHERE '' = ''
+        AND state_delete = 0
+        <if test='!searchColumn.equals("")'>
+            AND ${searchColumn} LIKE CONCAT('%',#{searchWord},'%')
+        </if>
+    </select>
+
+    <select id="findByKey" resultMap="BOARD_MAP">
+        SELECT `key`, title, `text`, password, date_create
+        FROM BOARD
+        WHERE '' = ''
+        AND state_delete = 0
+        AND `key`=${key}
+    </select>
+
+    <insert id="insert" parameterType="com.mall.nanna.board.entity.Board">
+        INSERT INTO BOARD
+        (title, `text`, password, date_create, date_update, date_delete, state_delete)
+        VALUES(#{title}, #{title}, #{password}, #{dateCreate}, NULL, NULL, 0)
+    </insert>
+
+    <update id="update" parameterType="com.mall.nanna.board.entity.Board">
+        UPDATE BOARD
+        SET title=#{title}, `text`=#{text}, password=#{password}, date_update=#{dateUpdate}
+        WHERE `key`=${key}
+    </update>
+
+    <update id="deleteByKey" parameterType="com.mall.nanna.board.entity.Board">
+        UPDATE BOARD
+        SET date_delete=#{dateDelete}, state_delete=1
+        WHERE `key`=${key}
+    </update>
+</mapper>
